@@ -70,6 +70,11 @@ font = cv2.FONT_HERSHEY_PLAIN
 distance=20
 ids = 0
 distancia=20
+
+x=None
+y=None
+
+angulo_robo=None
 # A função a seguir é chamada sempre que chega um novo frame
 def roda_todo_frame(imagem):
     print("frame")
@@ -383,9 +388,9 @@ def recebe_odometria(data):
 
     angulo_robo = angulos[2]
 
-    if contador % pula == 0:
-        print("Posicao (x,y)  ({:.2f} , {:.2f}) + angulo {:.2f}".format(x, y,angulos[2]))
-    contador = contador + 1
+    #if contador % pula == 0:
+        #print("Posicao (x,y)  ({:.2f} , {:.2f}) + angulo {:.2f}".format(x, y,angulos[2]))
+    #contador = contador + 1
 
 if __name__=="__main__":
     rospy.init_node("cor")
@@ -393,6 +398,7 @@ if __name__=="__main__":
     topico_imagem = "/camera/image/compressed"
 
     recebedor = rospy.Subscriber(topico_imagem, CompressedImage, roda_todo_frame, queue_size=4, buff_size = 2**24)
+    recebe_odom = rospy.Subscriber("/odom", Odometry , recebe_odometria)
     recebe_scan = rospy.Subscriber("/scan", LaserScan, scaneou)
 
     print("Usando ", topico_imagem)
@@ -402,23 +408,24 @@ if __name__=="__main__":
     tfl = tf2_ros.TransformListener(tf_buffer) #conversao do sistema de coordenadas 
     tolerancia = 25
 
-    AVANCAR = 0
-    POSICIONAR = 1
-    PEGAR = 2
-
-    estado = AVANCAR
-
-    ver_creeper = False
+    AVANCAR = True
+    POSICIONAR = False
+    PEGAR = False
+    CREEPER = False
     
     try:
         # Inicializando - por default gira no sentido anti-horário
         vel = Twist(Vector3(0,0,0), Vector3(0,0,math.pi/10.0))
         
         while not rospy.is_shutdown():
-            
-            if estado == AVANCAR:
+
+            if angulo_robo is not None:
+                if angulo_robo < 0:
+                    angulo_robo = angulo_robo + 2 * math.pi
+
+            if AVANCAR:
                 if not distance is None:
-                    if distancia>0.5:
+                    if distancia>1:
                         vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0))
     
                         if(len(centro) > 0 and len(media) > 0):
@@ -426,11 +433,18 @@ if __name__=="__main__":
                                 vel = Twist(Vector3(0.2,0,0), Vector3(0,0,-0.2))
                             else:
                                 vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0.2))
-                        else:
-                            vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
-                        ver_creeper = False
-                    else: 
+                    else:
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                        AVANCAR=False
+                        CREEPER = False
+            else:
+                vel = Twist(Vector3(0,0,0), Vector3(0,0,0.1))
+                angulo_atual = angulo_robo 
+                ang_roda = angulo_q_roda(x,y,angulo_atual)
+                if angulo_robo > ang_roda + angulo_atual:
+                    AVANCAR=True
+
+                    
 
 
 
