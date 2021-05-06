@@ -25,7 +25,7 @@ from sensor_msgs.msg import LaserScan
 import visao_module
 import statsmodels.api as sm
 import cormodule
-
+import cv2.aruco as aruco
 bridge = CvBridge()
 
 cv_image = None
@@ -57,15 +57,30 @@ tf_buffer = tf2_ros.Buffer()
 centro2 = 0
 media2 = 0
 
+aruco_dict  = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
+parameters  = aruco.DetectorParameters_create()
+parameters.minDistanceToBorder = 0
+parameters.adaptiveThreshWinSizeMax = 1000
+marker_size  = 20
+calib_path  = "/home/borg/catkin_ws/src/robot_proj_-frioecalculistabrabo_5a/"
+camera_matrix   = np.loadtxt(calib_path+'cameraMatrix_raspi.txt', delimiter=',')
+camera_distortion   = np.loadtxt(calib_path+'cameraDistortion_raspi.txt', delimiter=',')
+font = cv2.FONT_HERSHEY_PLAIN
+
+distance=20
+ids = 0
+distancia=20
 # A função a seguir é chamada sempre que chega um novo frame
 def roda_todo_frame(imagem):
     print("frame")
-    global cv_image
+    global temp_image
     global media
     global centro
     global resultados
     global centro2
     global media2
+    global distance
+    global ids
 
     now = rospy.get_rostime()
     imgtime = imagem.header.stamp
@@ -90,23 +105,30 @@ def roda_todo_frame(imagem):
         angulo = calcular_angulo_com_vertical(img, lm)
         '''
         media, centro, maior_area =  cormodule.identifica_cor(img)
-        print(media)
         img2 = temp_image.copy()
-        media2, centro2, maior_area2 =  cormodule.identifica_cor2(img2)
-        cv2.imshow("Camera", temp_image) 
+        #media2, centro2, maior_area2 =  cormodule.identifica_cor2(img2)
+        cv2.imshow("Camera", img) 
         cv2.waitKey(1)
         centro, saida_net, resultados =  visao_module.processa(temp_image)
+        distance, ids =acha_aruco(temp_image)
+
+        ids = ids[0][0]
+        
+        cv2.imshow("Aruco",temp_image)
+        cv2.waitKey(1)
         for r in resultados:
             # print(r) - print feito para documentar e entender
             # o resultado            
             pass
 
         # Desnecessário - Hough e MobileNet já abrem janelas
-        cv_image = saida_net.copy()
-        cv2.imshow("cv_image", img)
-        cv2.waitKey(1)
+        #cv_image = saida_net.copy()
+        #cv2.imshow("cv_image", img)
+        #cv2.waitKey(1)
     except CvBridgeError as e:
         print('ex', e)
+
+
 
 def segmenta_linha_amarela(bgr):
     """Não mude ou renomeie esta função
@@ -277,26 +299,94 @@ def ajuste_linear_grafico_x_fy(mask):
     return mask_rgb
 
 def scaneou(dado):
-	global distancia
-	print("Faixa valida: ", dado.range_min , " - ", dado.range_max )
-	print("Leituras:")
-	range = np.array(dado.ranges).round(decimals=2)
-	distancia = range[0]
-	print(range)
-	#print("Intensities")
-	#print(np.array(dado.intensities).round(decimals=2))
+    global distancia
+    print("Faixa valida: ", dado.range_min , " - ", dado.range_max )
+    print("Leituras:")
+    range = np.array(dado.ranges).round(decimals=2)
+    distancia = range[0]
+    print(range)
+    #print("Intensities")
+    #print(np.array(dado.intensities).round(decimals=2))
 
 def acha_aruco(gray):
-    aruco_dict  = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
-    corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict) #, parameters=parameters)
+    gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+    print(ids)
 
-    for i in range(len(ids)):
-        print('ID: {}'.format(ids[i]))
+    if ids is not None:
+        #-- ret = [rvec, tvec, ?]
+        #-- rvec = [[rvec_1], [rvec_2], ...] vetor de rotação
+        #-- tvec = [[tvec_1], [tvec_2], ...] vetor de translação
+        ret = aruco.estimatePoseSingleMarkers(corners, marker_size, camera_matrix, camera_distortion)
+        rvec, tvec = ret[0][0,0,:], ret[1][0,0,:]
+        #-- Desenha um retanculo e exibe Id do marker encontrado
+        aruco.drawDetectedMarkers(temp_image, corners, ids) 
+        aruco.drawAxis(temp_image, camera_matrix, camera_distortion, rvec, tvec, 1)
+        #-- Print tvec vetor de tanslação em x y z
+        str_position = "Marker x=%4.0f  y=%4.0f  z=%4.0f"%(tvec[0], tvec[1], tvec[2])
+        print(str_position)
+        cv2.putText(temp_image, str_position, (0, 100), font, 1, (0, 255, 0), 1, cv2.LINE_AA)
+        ##############----- Referencia dos Eixos------###########################
+        # Linha referencia em X
+        cv2.line(temp_image, (int(temp_image.shape[1]/2),int(temp_image.shape[0]/2)), ((int(temp_image.shape[1]/2) + 50),(int(temp_image.shape[0]/2))), (0,0,255), 5) 
+        # Linha referencia em Y
+        cv2.line(temp_image, (int(temp_image.shape[1]/2),int(temp_image.shape[0]/2)), ((int(temp_image.shape[1]/2)),(int(temp_image.shape[0]/2) + 50)), (0,255,0), 5) 	
         
-        for c in corners[i]: 
-            for canto in c:
-                print("Corner {}".format(canto))
-    
+        #####################---- Distancia Euclidiana ----#####################
+        # Calcula a distancia usando apenas a matriz tvec, matriz de tanslação
+        # Pode usar qualquer uma das duas formas
+        distance = np.sqrt(tvec[0]**2 + tvec[1]**2 + tvec[2]**2)
+        distancenp = np.linalg.norm(tvec)
+        #-- Print distance
+        str_dist = "Dist aruco=%4.0f  dis.np=%4.0f"%(distance, distancenp)
+        print(str_dist)
+        cv2.putText(temp_image, str_dist, (0, 15), font, 1, (0, 255, 0), 1, cv2.LINE_AA)
+
+        return distance, ids
+    return 1000,[[-1]]
+
+def valida_aruco(target):
+    achou = False
+    if not achou:
+        if len(ids)== 1:
+            if ids[0][0] == target:
+                achou = True
+            else:
+                return False
+        else:
+            return False
+    else:
+        return True
+
+def angulo_q_roda(x,y, ang):
+    angulo_trig = math.atan2(y,x)
+
+    roda = (math.pi - ang) + angulo_trig
+
+    return roda
+
+
+
+def recebe_odometria(data):
+    global x
+    global y
+    global contador
+    global angulos
+    global angulo_robo
+
+    x = data.pose.pose.position.x
+    y = data.pose.pose.position.y
+
+    quat = data.pose.pose.orientation
+    lista = [quat.x, quat.y, quat.z, quat.w]
+    angulos = transformations.euler_from_quaternion(lista)  
+
+    angulo_robo = angulos[2]
+
+    if contador % pula == 0:
+        print("Posicao (x,y)  ({:.2f} , {:.2f}) + angulo {:.2f}".format(x, y,angulos[2]))
+    contador = contador + 1
+
 if __name__=="__main__":
     rospy.init_node("cor")
 
@@ -327,19 +417,20 @@ if __name__=="__main__":
         while not rospy.is_shutdown():
             
             if estado == AVANCAR:
-                if not ver_creeper:
-                    vel = Twist(Vector3(0.5,0,0), Vector3(0,0,0))
-
-                    if(len(centro) > 0 and len(media) > 0):
-                        if (media[0] > centro[0]):
-                            vel = Twist(Vector3(0.2,0,0), Vector3(0,0,-0.2))
+                if not distance is None:
+                    if distancia>0.5:
+                        vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0))
+    
+                        if(len(centro) > 0 and len(media) > 0):
+                            if (media[0] > centro[0]):
+                                vel = Twist(Vector3(0.2,0,0), Vector3(0,0,-0.2))
+                            else:
+                                vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0.2))
                         else:
-                            vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0.2))
-                    else:
+                            vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                        ver_creeper = False
+                    else: 
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
-                    ver_creeper = False
-                else:
-                    vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
 
 
 
