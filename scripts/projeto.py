@@ -74,8 +74,7 @@ CHECK = False
 
 x=None
 y=None
-global OK50
-OK50 = False
+
 
 angulo_robo=None
 # A função a seguir é chamada sempre que chega um novo frame
@@ -410,7 +409,12 @@ if __name__=="__main__":
 	POSICIONAR = False
 	PEGAR = False
 	CREEPER = False
-	VIU_50 = False
+	OK50 = False
+	OK100 = False
+	OK150 = False
+	OK200 = False
+	volta = 1
+	
 	
 	try:
 		# Inicializando - por default gira no sentido anti-horário
@@ -424,7 +428,6 @@ if __name__=="__main__":
 
 			if AVANCAR:
 				if not distance is None:
-					VIU_50 = valida_aruco(50)
 					if (distancia>1):
 						vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0))
 	
@@ -433,21 +436,63 @@ if __name__=="__main__":
 								vel = Twist(Vector3(0.2,0,0), Vector3(0,0,-0.2))
 							else:
 								vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0.2))
-					if VIU_50:
+					if valida_aruco(50):
 						OK50 = True
-						print("PASSEI!!!!!!!!!!", OK50)
+						OK100 = False
+						OK150 = False
+						OK200 = False
+
+					if valida_aruco(100):
+						OK50 = False
+						OK100 = True
+						OK150 = False
+						OK200 = False
+
+					if valida_aruco(150):
+						OK50 = False
+						OK100 = False
+						OK150 = True
+						OK200 = False
+
+					if valida_aruco(200):
+						OK200 = True
+							
 					if (distancia<=1) and OK50:
 						vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+						angulo_atual = angulo_robo
 						AVANCAR=False
-						CREEPER = False
+
+					if (distancia<=1) and OK200:
+						if volta != 1:
+							vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+							angulo_atual = angulo_robo
+							volta += 1
+							AVANCAR=False
+						else:
+							AVANCAR = True
+
+					if (distancia<=2) and OK100:
+						if volta != 0:
+							vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+							angulo_atual = angulo_robo
+							vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
+							ang_roda = angulo_q_roda(x,y,angulo_atual)
+							if angulo_robo+20 > ang_roda + angulo_atual:
+								AVANCAR=True
+								OK50 = False
+								OK200 = False
+								OK100 = False
+						else:
+							AVANCAR = True
+						
+
 			else:
 				vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
-				angulo_atual = angulo_robo 
 				ang_roda = angulo_q_roda(x,y,angulo_atual)
-				if angulo_robo+1 > ang_roda + angulo_atual:
+				if angulo_robo+0.5 > ang_roda + angulo_atual:
 					AVANCAR=True
 					OK50 = False
-					
+					OK200 = False
 
 
 
