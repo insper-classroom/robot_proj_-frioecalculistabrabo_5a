@@ -315,8 +315,10 @@ def scaneou(dado):
     print("Leituras:")
     range = np.array(dado.ranges).round(decimals=2)
     distancia = range[0]
-    distancia_e = range[355]
-    distancia_d = range[5]
+    distancia_e = range[359]
+    distancia_d = range[1]
+    if distancia_d == "inf" or distancia_e == "inf" or distancia=="inf":
+        distancia = (distancia + distancia_d + distancia_e)/3
     #print(range)
     #print("Intensities")
     #print(np.array(dado.intensities).round(decimals=2))
@@ -435,9 +437,10 @@ if __name__=="__main__":
 
             if AVANCAR:
                 print("AVANCAR!!!!!")
+                print("Distancia:",distancia)
                 if not distance is None:
                     if (distancia>1):
-                        vel = Twist(Vector3(0.1,0,0), Vector3(0,0,0))
+                        vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0))
     
                         if(len(centro) > 0 and len(media) > 0):
                             if (media[0] > centro[0]):
@@ -446,27 +449,27 @@ if __name__=="__main__":
                                 vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0.2))
                     if valida_aruco(50):
                         OK50 = True
-                        #OK100 = False
-                        #OK150 = False
-                        #OK200 = False
+                        OK100 = False
+                        OK150 = False
+                        OK200 = False
 
                     if valida_aruco(100):
                         OK100 = True
-                        #OK50 = False
-                        #OK150 = False
-                        #OK200 = False
+                        OK50 = False
+                        OK150 = False
+                        OK200 = False
 
                     if valida_aruco(150):
                         OK150 = True
-                        #OK50 = False
-                        #OK100 = False
-                        #OK200 = False
+                        OK50 = False
+                        OK100 = False
+                        OK200 = False
 
                     if valida_aruco(200):
                         OK200 = True
-                        #OK150 = False
-                        #OK100 = False
-                        #OK50 = False
+                        OK150 = False
+                        OK100 = False
+                        OK50 = False
                             
                     if (distancia<=1) and OK50:
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
@@ -480,7 +483,7 @@ if __name__=="__main__":
                             AVANCAR=False
                             volta = True
                         
-                    if (distancia_e<=2 or distancia<=2) and OK100:
+                    if (distancia<=2) and OK100:
                         if volta:
                             if not POSICIONAR:
                                 agora = rospy.Time.now()
@@ -490,18 +493,26 @@ if __name__=="__main__":
                                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
                                 if rospy.Time.now() - agora >= rospy.Duration.from_sec(0.5 * math.pi / 0.2):
                                     OK100 = False
-                                    volta = False
-                                print("PASSOU!!!!!!!!!!!!!!!!!!!!")
+                                    print("PASSOU!!!!!!!!!!!!!!!!!!!!")
                         else:
                             AVANCAR = True
-                        
+
+                    if (distancia<=1) and OK150:
+                        print("PASSOU!!!!!!150!!!!150!!!!")
+                        vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                        angulo_atual = angulo_robo
+                        AVANCAR=False  
+
+                    print("OK50:",OK50)
                     print("OK100:",OK100)
+                    print("OK150:",OK150)
+                    print("OK200:",OK200)
                     print("Volta", volta)    
 
             else:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
                 ang_roda = angulo_q_roda(x,y,angulo_atual)
-                if angulo_robo+1> ang_roda + angulo_atual:
+                if angulo_robo+0.5> ang_roda + angulo_atual:
                     AVANCAR=True
                     OK50 = False
                     OK200 = False
