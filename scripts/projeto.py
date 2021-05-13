@@ -390,9 +390,10 @@ def recebe_odometria(data):
 
     quat = data.pose.pose.orientation
     lista = [quat.x, quat.y, quat.z, quat.w]
-    angulos = transformations.euler_from_quaternion(lista)  
+    angulos = np.degrees(transformations.euler_from_quaternion(lista))  
 
     angulo_robo = angulos[2]
+    angulo_robo = (angulo_robo + 360)%360
 
     #if contador % pula == 0:
         #print("Posicao (x,y)  ({:.2f} , {:.2f}) + angulo {:.2f}".format(x, y,angulos[2]))
@@ -418,6 +419,7 @@ if __name__=="__main__":
     POSICIONAR = False
     PEGAR = False
     CREEPER = False
+    RODANDO = False
     OK50 = False
     OK100 = False
     OK150 = False
@@ -483,7 +485,7 @@ if __name__=="__main__":
                             AVANCAR=False
                             volta = True
                         
-                    if (distancia<=2) and OK100:
+                    if (distancia<=1.5) and OK100:
                         if volta:
                             if not POSICIONAR:
                                 agora = rospy.Time.now()
@@ -494,28 +496,37 @@ if __name__=="__main__":
                                 if rospy.Time.now() - agora >= rospy.Duration.from_sec(0.5 * math.pi / 0.2):
                                     OK100 = False
                                     print("PASSOU!!!!!!!!!!!!!!!!!!!!")
-                        else:
-                            AVANCAR = True
+
 
                     if (distancia<=1) and OK150:
                         print("PASSOU!!!!!!150!!!!150!!!!")
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
-                        angulo_atual = angulo_robo
+                        angulo_desejado = (angulo_robo - 180 + 360) % 360
                         AVANCAR=False  
-
+                        RODANDO = True
                     print("OK50:",OK50)
                     print("OK100:",OK100)
                     print("OK150:",OK150)
                     print("OK200:",OK200)
-                    print("Volta", volta)    
+                    print("Volta", volta)  
+
+            elif RODANDO:
+                vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
+                #ang_roda = angulo_q_roda(x,y,angulo_atual)
+                print("ANG_ROBO:",angulo_robo,"ANG_DESEJADO:",angulo_desejado)
+                if angulo_robo-5 < angulo_desejado < angulo_robo+5:
+                    AVANCAR=True
+                    OK50 = False
+                    OK200 = False                
 
             else:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
                 ang_roda = angulo_q_roda(x,y,angulo_atual)
-                if angulo_robo+0.5> ang_roda + angulo_atual:
+                if angulo_robo> ang_roda + angulo_atual:
                     AVANCAR=True
                     OK50 = False
                     OK200 = False
+            
 
 
 
