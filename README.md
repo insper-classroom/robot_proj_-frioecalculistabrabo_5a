@@ -11,6 +11,8 @@ Nome dos integrantes:
 * Keiya Nishio
 
 Links dos vídeos:
+* Percorrendo a pista:
+https://www.youtube.com/watch?v=pCB7s8kSJq4
 
 
 Visite sempre o enunciado abaixo para atualizacões: 
