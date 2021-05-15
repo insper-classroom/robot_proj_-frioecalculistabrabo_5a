@@ -1,15 +1,16 @@
 # Base para Projeto 1 - Robótica 
 
-Nome do grupo: 
+Nome do grupo: FrioeCalculistabrabo
 
 ____________
 
 Nome dos integrantes: 
 
-* pessoa 1
-* pessoa 2
-* pessoa 3
-* pessoa 4
+* Bruno Freitas do Nascimento Rodrigues
+* João Victor Pazotti Silva
+* Keiya Nishio
+
+Links dos vídeos:
 
 
 Visite sempre o enunciado abaixo para atualizacões: 
