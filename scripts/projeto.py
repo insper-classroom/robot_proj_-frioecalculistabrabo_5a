@@ -72,6 +72,7 @@ ids = []
 distancia=20
 distancia_d = 20
 distancia_e = 20
+coef_angular = 0
 
 
 x=None
@@ -273,6 +274,7 @@ def center_of_mass(mask):
     return [int(cX), int(cY)]
 
 def ajuste_linear_x_fy(mask):
+    global coef_angular
     """Recebe uma imagem já limiarizada e faz um ajuste linear
         retorna coeficientes linear e angular da reta
         e equação é da forma
@@ -319,6 +321,8 @@ def scaneou(dado):
     distancia_d = range[1]
     if distancia_d == "inf" or distancia_e == "inf" or distancia=="inf":
         distancia = (distancia + distancia_d + distancia_e)/3
+    if range[270] == "inf" or range[269] == "inf" or range[271]=="inf":
+        distancia_e = (range[270] + range[269] + range[271])/3
     #print(range)
     #print("Intensities")
     #print(np.array(dado.intensities).round(decimals=2))
@@ -426,6 +430,9 @@ if __name__=="__main__":
     OK200 = False
     volta = True
     recomeco=1
+    volta_e = False
+    velocidade = 0.2
+    
     
     try:
         # Inicializando - por default gira no sentido anti-horário
@@ -440,15 +447,19 @@ if __name__=="__main__":
             if AVANCAR:
                 print("AVANCAR!!!!!")
                 print("Distancia:",distancia)
+                if (coef_angular < 0) and (coef_angular > -0.5):
+                    velocidade = 0.2
+                else:
+                    velocidade = 0.1 
                 if not distance is None:
                     if (distancia>1):
-                        vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0))
+                        vel = Twist(Vector3(velocidade,0,0), Vector3(0,0,0))
     
                         if(len(centro) > 0 and len(media) > 0):
                             if (media[0] > centro[0]):
-                                vel = Twist(Vector3(0.2,0,0), Vector3(0,0,-0.2))
+                                vel = Twist(Vector3(velocidade,0,0), Vector3(0,0,-0.2))
                             else:
-                                vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0.2))
+                                vel = Twist(Vector3(velocidade,0,0), Vector3(0,0,0.2))
                     if valida_aruco(50):
                         OK50 = True
                         OK100 = False
@@ -502,13 +513,26 @@ if __name__=="__main__":
                         print("PASSOU!!!!!!150!!!!150!!!!")
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
                         angulo_desejado = (angulo_robo - 180 + 360) % 360
-                        AVANCAR=False  
+                        AVANCAR=False
+                        volta_e = True  
                         RODANDO = True
-                    print("OK50:",OK50)
-                    print("OK100:",OK100)
-                    print("OK150:",OK150)
-                    print("OK200:",OK200)
-                    print("Volta", volta)  
+
+                    if (distancia_e>0) and volta_e:
+                        print("PASSOU!!!!!!150!!!!150!!!!")
+                        vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                        angulo_desejado = (angulo_robo - 90 + 360) % 360
+                        AVANCAR = False
+                        volta_e = False  
+                        RODANDO = True
+
+
+                    # print("OK50:",OK50)
+                    # print("OK100:",OK100)
+                    # print("OK150:",OK150)
+                    # print("OK200:",OK200)
+                    # print("Volta", volta)
+
+                      
 
             elif RODANDO:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
