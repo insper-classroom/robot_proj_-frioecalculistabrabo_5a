@@ -321,8 +321,6 @@ def scaneou(dado):
     distancia_d = range[1]
     if distancia_d == "inf" or distancia_e == "inf" or distancia=="inf":
         distancia = (distancia + distancia_d + distancia_e)/3
-    if range[270] == "inf" or range[269] == "inf" or range[271]=="inf":
-        distancia_e = (range[270] + range[269] + range[271])/3
     #print(range)
     #print("Intensities")
     #print(np.array(dado.intensities).round(decimals=2))
@@ -428,9 +426,8 @@ if __name__=="__main__":
     OK100 = False
     OK150 = False
     OK200 = False
-    volta = True
-    recomeco=1
-    volta_e = False
+    volta = False
+    recomeco = 1
     velocidade = 0.2
     
     
@@ -447,10 +444,11 @@ if __name__=="__main__":
             if AVANCAR:
                 print("AVANCAR!!!!!")
                 print("Distancia:",distancia)
-                if (coef_angular < 0) and (coef_angular > -0.5):
-                    velocidade = 0.2
+                if (coef_angular < 0.8) and (coef_angular > -0.8):
+                    velocidade = 0.4
                 else:
                     velocidade = 0.1 
+
                 if not distance is None:
                     if (distancia>1):
                         vel = Twist(Vector3(velocidade,0,0), Vector3(0,0,0))
@@ -486,15 +484,23 @@ if __name__=="__main__":
                             
                     if (distancia<=1) and OK50:
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
-                        angulo_atual = angulo_robo
-                        AVANCAR=False
+                        angulo_desejado = (angulo_robo - 180 + 360) % 360
+                        AVANCAR=False 
+                        RODANDO = True
 
-                    if (distancia<=1) and OK200:
+                    if (distancia<=1.5) and OK200:
                         if not volta:
                             vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
-                            angulo_atual = angulo_robo
+                            angulo_desejado = (angulo_robo - 180 + 360) % 360
                             AVANCAR=False
                             volta = True
+                            RODANDO = True
+
+                    if (distancia<=1) and OK200 and volta:
+                        vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                        angulo_desejado = (angulo_robo - 315 + 360) % 360
+                        AVANCAR = False 
+                        RODANDO = True 
                         
                     if (distancia<=1.5) and OK100:
                         if volta:
@@ -506,33 +512,13 @@ if __name__=="__main__":
                                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
                                 if rospy.Time.now() - agora >= rospy.Duration.from_sec(0.5 * math.pi / 0.2):
                                     OK100 = False
-                                    print("PASSOU!!!!!!!!!!!!!!!!!!!!")
 
 
                     if (distancia<=1) and OK150:
-                        print("PASSOU!!!!!!150!!!!150!!!!")
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
                         angulo_desejado = (angulo_robo - 180 + 360) % 360
-                        AVANCAR=False
-                        volta_e = True  
+                        AVANCAR=False 
                         RODANDO = True
-
-                    if (distancia_e>0) and volta_e:
-                        print("PASSOU!!!!!!150!!!!150!!!!")
-                        vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
-                        angulo_desejado = (angulo_robo - 90 + 360) % 360
-                        AVANCAR = False
-                        volta_e = False  
-                        RODANDO = True
-
-
-                    # print("OK50:",OK50)
-                    # print("OK100:",OK100)
-                    # print("OK150:",OK150)
-                    # print("OK200:",OK200)
-                    # print("Volta", volta)
-
-                      
 
             elif RODANDO:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
@@ -543,13 +529,15 @@ if __name__=="__main__":
                     OK50 = False
                     OK200 = False                
 
-            else:
-                vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
-                ang_roda = angulo_q_roda(x,y,angulo_atual)
-                if angulo_robo> ang_roda + angulo_atual:
-                    AVANCAR=True
-                    OK50 = False
-                    OK200 = False
+            # else:
+            #     vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
+            #     ang_roda = angulo_q_roda(x,y,angulo_atual)
+            #     if angulo_robo> ang_roda + angulo_atual:
+            #         AVANCAR=True
+            #         OK50 = False
+            #         OK200 = False
+
+            
             
 
 
