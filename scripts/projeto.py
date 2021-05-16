@@ -54,8 +54,6 @@ tfl = 0
 
 tf_buffer = tf2_ros.Buffer()
 
-centro2 = 0
-media2 = 0
 
 aruco_dict  = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
 parameters  = aruco.DetectorParameters_create()
@@ -72,7 +70,8 @@ ids = []
 distancia=20
 distancia_esq =20
 coef_angular = 0
-
+centro_creeper = 0
+centro_img = 0
 
 
 x=None
@@ -87,8 +86,6 @@ def roda_todo_frame(imagem):
     global media
     global centro
     global resultados
-    global centro2
-    global media2
     global distance
     global ids
 
@@ -114,6 +111,8 @@ def roda_todo_frame(imagem):
         img, lm = regressao_por_centro(img, X,Y)
         angulo = calcular_angulo_com_vertical(img, lm)
         '''
+        missao = ["green", 21, "cow"]
+        acha_creeper(missao, temp_image)
         media, centro, maior_area =  cormodule.identifica_cor(img)
         img2 = temp_image.copy()
         #media2, centro2, maior_area2 =  cormodule.identifica_cor2(img2)
@@ -269,9 +268,12 @@ def center_of_mass(mask):
     """ Retorna uma tupla (cx, cy) que desenha o centro do contorno"""
     M = cv2.moments(mask)
     # Usando a expressão do centróide definida em: https://en.wikipedia.org/wiki/Image_moment
-    cX = int(M["m10"] / M["m00"])
-    cY = int(M["m01"] / M["m00"])
-    return [int(cX), int(cY)]
+    if M["m00"] != 0:
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
+        return [int(cX), int(cY)]
+    else: 
+        return [0,0]
 
 def ajuste_linear_x_fy(mask):
     """Recebe uma imagem já limiarizada e faz um ajuste linear
@@ -282,13 +284,16 @@ def ajuste_linear_x_fy(mask):
     global coef_angular
     pontos = np.where(mask==255)
     ximg = pontos[1]
-    yimg = pontos[0]
-    yimg_c = sm.add_constant(yimg)
-    model = sm.OLS(ximg,yimg_c)
-    results = model.fit()
-    coef_angular = results.params[1] # Pegamos o beta 1
-    coef_linear =  results.params[0] # Pegamso o beta 0
-    return coef_angular, coef_linear
+    yimg = pontos[0] 
+    if len(yimg) != 0:
+        yimg_c = sm.add_constant(yimg)
+        model = sm.OLS(ximg,yimg_c)
+        results = model.fit()
+        coef_angular = results.params[1] # Pegamos o beta 1
+        coef_linear =  results.params[0] # Pegamso o beta 0
+        return coef_angular, coef_linear
+    else:
+        return 0,0
 
 
 def ajuste_linear_grafico_x_fy(mask):
@@ -298,15 +303,18 @@ def ajuste_linear_grafico_x_fy(mask):
     pontos = np.where(mask==255) # esta linha é pesada e ficou redundante
     ximg = pontos[1]
     yimg = pontos[0]
-    y_bounds = np.array([min(yimg), max(yimg)])
-    x_bounds = coef_angular*y_bounds + coef_linear
-    print("x bounds", x_bounds)
-    print("y bounds", y_bounds)
-    x_int = x_bounds.astype(dtype=np.int64)
-    y_int = y_bounds.astype(dtype=np.int64)
-    mask_rgb =  cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
-    cv2.line(mask_rgb, (x_int[0], y_int[0]), (x_int[1], y_int[1]), color=(0,0,255), thickness=11);    
-    return mask_rgb
+    if len(yimg) != 0:
+        y_bounds = np.array([min(yimg), max(yimg)])
+        x_bounds = coef_angular*y_bounds + coef_linear
+        print("x bounds", x_bounds)
+        print("y bounds", y_bounds)
+        x_int = x_bounds.astype(dtype=np.int64)
+        y_int = y_bounds.astype(dtype=np.int64)
+        mask_rgb =  cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
+        cv2.line(mask_rgb, (x_int[0], y_int[0]), (x_int[1], y_int[1]), color=(0,0,255), thickness=11);    
+        return mask_rgb
+    else:
+        return None
 
 def scaneou(dado):
     global distancia
@@ -378,7 +386,6 @@ def angulo_q_roda(x,y, ang):
     return roda
 
 
-
 def recebe_odometria(data):
     global x
     global y
@@ -399,6 +406,28 @@ def recebe_odometria(data):
     #if contador % pula == 0:
         #print("Posicao (x,y)  ({:.2f} , {:.2f}) + angulo {:.2f}".format(x, y,angulos[2]))
     #contador = contador + 1
+
+def acha_creeper(missao, frame):
+    global centro_creeper
+    global centro_img
+    img_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    ####Escolhe cor
+    if missao[0] == "blue":
+        mask = cv2.inRange(img_hsv, (93, 158, 250), (98, 255, 255))
+    elif missao[0] == "green":
+        mask = cv2.inRange(img_hsv, (66, 250, 250), (68, 255, 255))
+    else:
+        mask = cv2.inRange(img_hsv, (0, 250, 250), (4, 255, 255))
+    ####
+    final_mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,np.ones((10, 10)))
+    final_mask = morpho_limpa(final_mask)
+    centro_creeper = center_of_mass(final_mask)
+    centro_img = (frame.shape[1]//2, frame.shape[0]//2)
+    cv2.imshow("creeper", final_mask)
+    cv2.waitKey(1)
+
+
+
 
 if __name__=="__main__":
     rospy.init_node("cor")
@@ -421,6 +450,7 @@ if __name__=="__main__":
     PEGAR = False
     CREEPER = False
     RODANDO = False
+    viu_creeper = False
     OK50 = False
     OK100 = False
     OK150 = False
@@ -443,7 +473,7 @@ if __name__=="__main__":
                 print("Distancia:",distancia)
                 if not distance is None:
                     if 0.8 > coef_angular >- 0.8:
-                        v = 0.3
+                        v = 0.2
                     else: 
                         v = 0.1
                     if (distancia>1):
@@ -508,7 +538,10 @@ if __name__=="__main__":
                         AVANCAR=False 
                         volta_esq = True 
                         RODANDO = True
- 
+                    
+                    if centro_creeper != 0 and not viu_creeper:
+                        AVANCAR = False
+                        CREEPER = True
 
             elif RODANDO:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
@@ -519,8 +552,18 @@ if __name__=="__main__":
                     OK50 = False
                     OK200 = False                
 
-
-            
+            elif CREEPER:
+                if distancia >= 0.2:
+                    vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0))
+                    if (centro_creeper[0] > centro_img[0]):
+                        vel = Twist(Vector3(0.3,0,0), Vector3(0,0,-0.2))
+                    else:
+                        vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0.2))
+                else:
+                    CREEPER = False
+                    viu_creeper = True
+                    RODANDO = True
+                    angulo_desejado = (angulo_robo - 180 + 360) % 360
 
 
 
