@@ -68,16 +68,10 @@ font = cv2.FONT_HERSHEY_PLAIN
 distance=20
 ids = []
 distancia=20
-<<<<<<< HEAD
 distancia_esq =20
 coef_angular = 0
-centro_creeper = 0
-centro_img = 0
-=======
-distancia_d = 20
-distancia_e = 20
-coef_angular = 0
->>>>>>> bb11f1d30b22516747aca123a8cf76f0c56c861a
+centro_creeper = []
+centro_img = []
 
 
 x=None
@@ -121,7 +115,6 @@ def roda_todo_frame(imagem):
         acha_creeper(missao, temp_image)
         media, centro, maior_area =  cormodule.identifica_cor(img)
         img2 = temp_image.copy()
-        #media2, centro2, maior_area2 =  cormodule.identifica_cor2(img2)
         cv2.imshow("Camera", img) 
         cv2.waitKey(1)
         centro, saida_net, resultados =  visao_module.processa(temp_image)
@@ -420,17 +413,20 @@ def acha_creeper(missao, frame):
     img_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     ####Escolhe cor
     if missao[0] == "blue":
-        mask = cv2.inRange(img_hsv, (93, 158, 250), (98, 255, 255))
+        #mask = cv2.inRange(img_hsv, (93, 158, 250), (98, 255, 255))
+        centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor2(frame)
     elif missao[0] == "green":
-        mask = cv2.inRange(img_hsv, (66, 250, 250), (68, 255, 255))
+        #mask = cv2.inRange(img_hsv, (66, 250, 250), (68, 255, 255))
+        centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor2(frame)
     else:
-        mask = cv2.inRange(img_hsv, (0, 250, 250), (4, 255, 255))
+        #mask = cv2.inRange(img_hsv, (0, 250, 250), (4, 255, 255))
+        centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor2(frame)
     ####
-    final_mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,np.ones((10, 10)))
-    final_mask = morpho_limpa(final_mask)
-    centro_creeper = center_of_mass(final_mask)
-    centro_img = (frame.shape[1]//2, frame.shape[0]//2)
-    cv2.imshow("creeper", final_mask)
+    #final_mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,np.ones((10, 10)))
+    #final_mask = morpho_limpa(final_mask)
+    #centro_creeper = center_of_mass(final_mask)
+    #centro_img = (frame.shape[1]//2, frame.shape[0]//2)
+    cv2.imshow("creeper", frame)
     cv2.waitKey(1)
 
 
@@ -560,11 +556,11 @@ if __name__=="__main__":
                         AVANCAR=False 
                         volta_esq = True 
                         RODANDO = True
-                    
-                    if centro_creeper != 0 and not viu_creeper:
+
+                    if not centro_creeper is None and not viu_creeper:
                         AVANCAR = False
                         CREEPER = True
-
+                    
             elif RODANDO:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
                 #ang_roda = angulo_q_roda(x,y,angulo_atual)
