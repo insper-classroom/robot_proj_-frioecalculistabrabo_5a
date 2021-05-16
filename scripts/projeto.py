@@ -111,8 +111,8 @@ def roda_todo_frame(imagem):
         img, lm = regressao_por_centro(img, X,Y)
         angulo = calcular_angulo_com_vertical(img, lm)
         '''
-        missao = ["green", 21, "cow"]
-        acha_creeper(missao, temp_image)
+        missao = ["orange", 21, "cow"]
+        acha_creeper(missao, temp_image.copy())
         media, centro, maior_area =  cormodule.identifica_cor(img)
         img2 = temp_image.copy()
         cv2.imshow("Camera", img) 
@@ -414,13 +414,13 @@ def acha_creeper(missao, frame):
     ####Escolhe cor
     if missao[0] == "blue":
         #mask = cv2.inRange(img_hsv, (93, 158, 250), (98, 255, 255))
-        centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor2(frame)
+        centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor_azul(frame)
     elif missao[0] == "green":
         #mask = cv2.inRange(img_hsv, (66, 250, 250), (68, 255, 255))
-        centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor2(frame)
+        centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor_verde(frame)
     else:
         #mask = cv2.inRange(img_hsv, (0, 250, 250), (4, 255, 255))
-        centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor2(frame)
+        centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor_laranja(frame)
     ####
     #final_mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,np.ones((10, 10)))
     #final_mask = morpho_limpa(final_mask)
@@ -458,7 +458,7 @@ if __name__=="__main__":
     OK100 = False
     OK150 = False
     OK200 = False
-    volta = False
+    volta = True
     recomeco = 1
     velocidade = 0.2
     
