@@ -14,6 +14,8 @@ Links dos vídeos:
 * Percorrendo a pista:
 https://www.youtube.com/watch?v=pCB7s8kSJq4
 
+* Creeper Azul: https://www.youtube.com/watch?v=1o8VfjLdEbU&ab_channel=BrunoRodrigues
+
 
 Visite sempre o enunciado abaixo para atualizacões: 
 
