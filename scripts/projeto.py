@@ -68,10 +68,16 @@ font = cv2.FONT_HERSHEY_PLAIN
 distance=20
 ids = []
 distancia=20
+<<<<<<< HEAD
 distancia_esq =20
 coef_angular = 0
 centro_creeper = 0
 centro_img = 0
+=======
+distancia_d = 20
+distancia_e = 20
+coef_angular = 0
+>>>>>>> bb11f1d30b22516747aca123a8cf76f0c56c861a
 
 
 x=None
@@ -276,6 +282,7 @@ def center_of_mass(mask):
         return [0,0]
 
 def ajuste_linear_x_fy(mask):
+    global coef_angular
     """Recebe uma imagem já limiarizada e faz um ajuste linear
         retorna coeficientes linear e angular da reta
         e equação é da forma
@@ -456,7 +463,9 @@ if __name__=="__main__":
     OK150 = False
     OK200 = False
     volta = False
-
+    recomeco = 1
+    velocidade = 0.2
+    
     
     try:
         # Inicializando - por default gira no sentido anti-horário
@@ -471,19 +480,24 @@ if __name__=="__main__":
             if AVANCAR:
                 print("AVANCAR!!!!!")
                 print("Distancia:",distancia)
+                if (coef_angular < 0.8) and (coef_angular > -0.8):
+                    velocidade = 0.4
+                else:
+                    velocidade = 0.1 
+
                 if not distance is None:
                     if 0.8 > coef_angular >- 0.8:
                         v = 0.2
                     else: 
                         v = 0.1
                     if (distancia>1):
-                        vel = Twist(Vector3(v,0,0), Vector3(0,0,0))
+                        vel = Twist(Vector3(velocidade,0,0), Vector3(0,0,0))
     
                         if(len(centro) > 0 and len(media) > 0):
                             if (media[0] > centro[0]):
-                                vel = Twist(Vector3(v,0,0), Vector3(0,0,-0.2))
+                                vel = Twist(Vector3(velocidade,0,0), Vector3(0,0,-0.2))
                             else:
-                                vel = Twist(Vector3(v,0,0), Vector3(0,0,0.2))
+                                vel = Twist(Vector3(velocidade,0,0), Vector3(0,0,0.2))
                     if valida_aruco(50):
                         OK50 = True
                         OK100 = False
@@ -511,15 +525,23 @@ if __name__=="__main__":
                     if (distancia<=1) and OK50:
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
                         angulo_desejado = (angulo_robo - 180 + 360) % 360
-                        AVANCAR=False
-                        RODANDO=True
-                    if (distancia<=1) and OK200:
+                        AVANCAR=False 
+                        RODANDO = True
+
+                    if (distancia<=1.5) and OK200:
                         if not volta:
                             vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
                             angulo_desejado = (angulo_robo - 180 + 360) % 360
                             AVANCAR=False
                             volta = True
-                            RODANDO=True
+                            RODANDO = True
+
+                    if (distancia<=1) and OK200 and volta:
+                        vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                        angulo_desejado = (angulo_robo - 315 + 360) % 360
+                        AVANCAR = False 
+                        RODANDO = True 
+                        
                     if (distancia<=1.5) and OK100:
                         if volta:
                             if not POSICIONAR:
@@ -530,9 +552,9 @@ if __name__=="__main__":
                                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
                                 if rospy.Time.now() - agora >= rospy.Duration.from_sec(0.5 * math.pi / 0.2):
                                     OK100 = False
-                                
+
+
                     if (distancia<=1) and OK150:
-                        print("PASSOU!!!!!!150!!!!150!!!!")
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
                         angulo_desejado = (angulo_robo - 180 + 360) % 360
                         AVANCAR=False 

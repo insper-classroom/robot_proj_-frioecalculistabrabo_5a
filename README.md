@@ -1,15 +1,20 @@
 # Base para Projeto 1 - Robótica 
 
-Nome do grupo: 
+Nome do grupo: FrioeCalculistabrabo
 
 ____________
 
 Nome dos integrantes: 
 
-* pessoa 1
-* pessoa 2
-* pessoa 3
-* pessoa 4
+* Bruno Freitas do Nascimento Rodrigues
+* João Victor Pazotti Silva
+* Keiya Nishio
+
+Links dos vídeos:
+* Percorrendo a pista:
+https://www.youtube.com/watch?v=pCB7s8kSJq4
+
+* Creeper Azul: https://www.youtube.com/watch?v=1o8VfjLdEbU&ab_channel=BrunoRodrigues
 
 
 Visite sempre o enunciado abaixo para atualizacões: 
