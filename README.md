@@ -15,6 +15,8 @@ Links dos vídeos:
 https://www.youtube.com/watch?v=pCB7s8kSJq4
 
 * Creeper Azul: https://www.youtube.com/watch?v=1o8VfjLdEbU&ab_channel=BrunoRodrigues
+* Creeper Verde: https://youtu.be/N3ez9efQ2kE
+* Creeper Laranja: https://youtu.be/UUxEeuQdCBY
 
 
 Visite sempre o enunciado abaixo para atualizacões: 
