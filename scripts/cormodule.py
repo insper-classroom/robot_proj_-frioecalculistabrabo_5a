@@ -91,7 +91,7 @@ def identifica_cor(frame):
     #cv2.waitKey(1)
 
     return media, centro, maior_contorno_area
-255, 16, 0
+
 def identifica_cor_verde(frame):
     '''
     Segmenta o maior objeto cuja cor é parecida com cor_h (HUE da cor, no espaço HSV).
@@ -104,9 +104,9 @@ def identifica_cor_verde(frame):
     # frame = cv2.flip(frame, -1) # flip 0: eixo x, 1: eixo y, -1: 2 eixos
     frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    cor_menor = np.array([0, 245, 0])
-    cor_maior = np.array([0, 255, 0])
-    segmentado_cor = cv2.inRange(frame, cor_menor, cor_maior)
+    cor_menor = np.array([36, 25, 25])
+    cor_maior = np.array([70, 255, 255])
+    segmentado_cor = cv2.inRange(frame_hsv, cor_menor, cor_maior)
 
     #cor_menor = np.array([174, 50, 100])
     #cor_maior = np.array([180, 255, 255])
@@ -180,9 +180,9 @@ def identifica_cor_azul(frame):
     # frame = cv2.flip(frame, -1) # flip 0: eixo x, 1: eixo y, -1: 2 eixos
     frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    cor_menor = np.array([250, 224, 94])
-    cor_maior = np.array([255, 229,98])
-    segmentado_cor = cv2.inRange(frame, cor_menor, cor_maior)
+    cor_menor = np.array([85, 50, 50])
+    cor_maior = np.array([135, 255,255])
+    segmentado_cor = cv2.inRange(frame_hsv, cor_menor, cor_maior)
 
     #cor_menor = np.array([174, 50, 100])
     #cor_maior = np.array([180, 255, 255])
@@ -256,17 +256,17 @@ def identifica_cor_laranja(frame):
     # frame = cv2.flip(frame, -1) # flip 0: eixo x, 1: eixo y, -1: 2 eixos
     frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    cor_menor = np.array([0, 11, 250])
-    cor_maior = np.array([0, 16, 255])
-    segmentado_cor = cv2.inRange(frame, cor_menor, cor_maior)
+    cor_menor = np.array([0, 150, 200])
+    cor_maior = np.array([10, 255, 255])
+    segmentado_cor = cv2.inRange(frame_hsv, cor_menor, cor_maior)
 
-    #cor_menor = np.array([174, 50, 100])
-    #cor_maior = np.array([180, 255, 255])
+    cor_menor = np.array([180, 150, 100])
+    cor_maior = np.array([180, 255, 255])
 
     # NOTA: so' precisamos de 2 ranges porque o vermelho da' 
     # a volta do 360 para o zero.
     # Para qualquer outra cor apenas um inRange resolve
-    #segmentado_cor += cv2.inRange(frame_hsv, cor_menor, cor_maior)
+    segmentado_cor += cv2.inRange(frame_hsv, cor_menor, cor_maior)
 
     # Note que a notacão do numpy encara as imagens como matriz, portanto o enderecamento é
     # linha, coluna ou (y,x)
