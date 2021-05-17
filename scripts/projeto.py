@@ -112,17 +112,19 @@ def roda_todo_frame(imagem):
         img, lm = regressao_por_centro(img, X,Y)
         angulo = calcular_angulo_com_vertical(img, lm)
         '''
-        missao = ["orange", 21, "cow"]
+        #missao = ["orange", 11, "cow"]
+        #missao = ["blue", 12, "dog"]
+        #missao = ["green", 23, "horse"]
+        missao = ["Teste", 0, 0]
         acha_creeper(missao, temp_image.copy())
-        media, centro, maior_area =  cormodule.identifica_cor(img)
-        img2 = temp_image.copy()
+        media, centro, maior_area =  cormodule.identifica_cor(mask)
         cv2.imshow("Camera", img) 
         cv2.waitKey(1)
         centro, saida_net, resultados =  visao_module.processa(temp_image)
         distance, ids =acha_aruco(temp_image)
         ids = ids[0][0]
         print("ids:",ids)
-        cv2.imshow("Aruco",temp_image)
+        cv2.imshow("Aruco", temp_image)
         cv2.waitKey(1)
         for r in resultados:
             # print(r) - print feito para documentar e entender
@@ -281,8 +283,7 @@ def ajuste_linear_x_fy(mask):
         retorna coeficientes linear e angular da reta
         e equação é da forma
         y = coef_angular*x + coef_linear
-    """ 
-    global coef_angular
+    """
     pontos = np.where(mask==255)
     ximg = pontos[1]
     yimg = pontos[0] 
@@ -414,15 +415,16 @@ def acha_creeper(missao, frame):
     global maior_area2
     img_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     ####Escolhe cor
-    if missao[0] == "blue":
-        #mask = cv2.inRange(img_hsv, (93, 158, 250), (98, 255, 255))
+    if missao[0] == "blue":  
         centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor_azul(frame)
+        
     elif missao[0] == "green":
-        #mask = cv2.inRange(img_hsv, (66, 250, 250), (68, 255, 255))
         centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor_verde(frame)
-    else:
-        #mask = cv2.inRange(img_hsv, (0, 250, 250), (4, 255, 255))
+
+    elif missao[0] == "orange":
         centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor_laranja(frame)
+    else:
+        centro_creeper, centro_img, maior_area2 =  [0,0],[0,0],0
     ####
     #final_mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,np.ones((10, 10)))
     #final_mask = morpho_limpa(final_mask)
@@ -460,7 +462,7 @@ if __name__=="__main__":
     OK100 = False
     OK150 = False
     OK200 = False
-    volta = True
+    volta = False
     recomeco = 1
     velocidade = 0.2
     
@@ -479,7 +481,7 @@ if __name__=="__main__":
                 print("AVANCAR!!!!!")
                 print("Distancia:",distancia)
                 if (coef_angular < 0.8) and (coef_angular > -0.8):
-                    velocidade = 0.3
+                    velocidade = 0.2
                 else:
                     velocidade = 0.1 
 
