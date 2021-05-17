@@ -70,6 +70,7 @@ ids = []
 distancia=20
 distancia_esq =20
 coef_angular = 0
+maior_area2 = 0
 centro_creeper = []
 centro_img = []
 
@@ -410,6 +411,7 @@ def recebe_odometria(data):
 def acha_creeper(missao, frame):
     global centro_creeper
     global centro_img
+    global maior_area2
     img_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     ####Escolhe cor
     if missao[0] == "blue":
@@ -477,7 +479,7 @@ if __name__=="__main__":
                 print("AVANCAR!!!!!")
                 print("Distancia:",distancia)
                 if (coef_angular < 0.8) and (coef_angular > -0.8):
-                    velocidade = 0.4
+                    velocidade = 0.3
                 else:
                     velocidade = 0.1 
 
@@ -521,20 +523,23 @@ if __name__=="__main__":
                     if (distancia<=1) and OK50:
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
                         angulo_desejado = (angulo_robo - 180 + 360) % 360
-                        AVANCAR=False 
+                        print("GIRAR 50!")
+                        AVANCAR = False 
                         RODANDO = True
 
                     if (distancia<=1.5) and OK200:
                         if not volta:
                             vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
                             angulo_desejado = (angulo_robo - 180 + 360) % 360
-                            AVANCAR=False
+                            print("GIRAR 200!")
+                            AVANCAR = False
                             volta = True
                             RODANDO = True
 
                     if (distancia<=1) and OK200 and volta:
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
                         angulo_desejado = (angulo_robo - 315 + 360) % 360
+                        print("GIRAR 200! VOLTA")
                         AVANCAR = False 
                         RODANDO = True 
                         
@@ -553,14 +558,17 @@ if __name__=="__main__":
                     if (distancia<=1) and OK150:
                         vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
                         angulo_desejado = (angulo_robo - 180 + 360) % 360
-                        AVANCAR=False 
+                        print("GIRAR 150!")
+                        AVANCAR = False 
                         volta_esq = True 
                         RODANDO = True
 
                     if not centro_creeper is None and not viu_creeper:
-                        AVANCAR = False
-                        CREEPER = True
-                    
+                        if maior_area2 >= 500:
+                            print("GIRAR CREEPER")
+                            AVANCAR = False
+                            CREEPER = True
+                    print("AREA CREEPER:",maior_area2)
             elif RODANDO:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
                 #ang_roda = angulo_q_roda(x,y,angulo_atual)
@@ -571,6 +579,7 @@ if __name__=="__main__":
                     OK200 = False                
 
             elif CREEPER:
+                print("ENTROU CREEPER")
                 if distancia >= 0.2:
                     vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0))
                     if (centro_creeper[0] > centro_img[0]):
@@ -578,6 +587,7 @@ if __name__=="__main__":
                     else:
                         vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0.2))
                 else:
+                    print("ENTROU CREEPER ELSE")
                     CREEPER = False
                     viu_creeper = True
                     RODANDO = True
