@@ -319,7 +319,7 @@ def ajuste_linear_grafico_x_fy(mask):
 
 def scaneou(dado):
     global distancia
-    global distancia_esq
+    #global distancia_esq
 
     print("Faixa valida: ", dado.range_min , " - ", dado.range_max )
     print("Leituras:")
@@ -328,7 +328,7 @@ def scaneou(dado):
     distancia_e = range[359]
     distancia_d = range[1]
     distancia = (distancia + distancia_d + distancia_e)/3
-    distancia_esq = (range[270]+range[269]+range[271])/3
+    #distancia_esq = (range[270]+range[269]+range[271])/3
     #print(range)
     #print("Intensities")
     #print(np.array(dado.intensities).round(decimals=2))
@@ -564,30 +564,32 @@ if __name__=="__main__":
                         RODANDO = True
 
                     if not centro_creeper is None and not viu_creeper:
-                        if maior_area2 >= 500:
-                            print("GIRAR CREEPER")
+                        if maior_area2 >= 1000:
                             AVANCAR = False
                             CREEPER = True
-                    print("AREA CREEPER:",maior_area2)
-            elif RODANDO:
+                            print("AREA CREEPER:",maior_area2)
+            if RODANDO:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
                 #ang_roda = angulo_q_roda(x,y,angulo_atual)
                 print("ANG_ROBO:",angulo_robo,"ANG_DESEJADO:",angulo_desejado)
                 if angulo_robo-5 < angulo_desejado < angulo_robo+5:
                     AVANCAR=True
+                    RODANDO = False
                     OK50 = False
                     OK200 = False                
 
-            elif CREEPER:
+            if CREEPER:
                 print("ENTROU CREEPER")
-                if distancia >= 0.2:
+                if  distancia >= 0.2:
+                    print("ENTROU CREEPER IF")
                     vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0))
                     if (centro_creeper[0] > centro_img[0]):
                         vel = Twist(Vector3(0.3,0,0), Vector3(0,0,-0.2))
                     else:
                         vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0.2))
-                else:
+                elif distancia <= 0.2:
                     print("ENTROU CREEPER ELSE")
+                    vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0))
                     CREEPER = False
                     viu_creeper = True
                     RODANDO = True
