@@ -11,11 +11,12 @@ Nome dos integrantes:
 * Keiya Nishio
 
 Links dos vídeos:
-* Percorrendo a pista:
+* Percorrendo a pista: https://www.youtube.com/watch?v=KlYdUrmGaGI
+* Percorrendo a pista (20 minutos): https://www.youtube.com/watch?v=Ifc1ds73jho 
 
-* Creeper Azul: 
-* Creeper Verde: 
-* Creeper Laranja: 
+* Creeper Azul: https://www.youtube.com/watch?v=XW7navdOdek
+* Creeper Verde: https://www.youtube.com/watch?v=2ZjgkT2vwTI
+* Creeper Laranja: https://www.youtube.com/watch?v=nKh9kAYvDx4
 
 
 Visite sempre o enunciado abaixo para atualizacões: 
