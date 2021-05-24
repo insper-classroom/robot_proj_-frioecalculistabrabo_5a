@@ -105,7 +105,7 @@ def identifica_cor_verde(frame):
     # frame = cv2.flip(frame, -1) # flip 0: eixo x, 1: eixo y, -1: 2 eixos
     frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    cor_menor = np.array([36, 25, 25])
+    cor_menor = np.array([36, 25, 0])
     cor_maior = np.array([70, 255, 255])
     segmentado_cor = cv2.inRange(frame_hsv, cor_menor, cor_maior)
 

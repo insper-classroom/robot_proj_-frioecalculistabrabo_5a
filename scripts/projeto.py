@@ -16,7 +16,7 @@ from tf import transformations
 from tf import TransformerROS
 import tf2_ros
 from geometry_msgs.msg import Twist, Vector3, Pose, Vector3Stamped
-
+from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Header
 from sklearn.linear_model import LinearRegression
@@ -104,9 +104,9 @@ def roda_todo_frame(imagem):
         temp_image = bridge.compressed_imgmsg_to_cv2(imagem, "bgr8")
         mask = segmenta_linha_amarela(temp_image)
         img = ajuste_linear_grafico_x_fy(mask)
-        #missao = ["orange", 11, "cow"]
-        missao = ["blue", 22, "dog"]
-        #missao = ["green", 23, "horse"]
+        missao = ["orange", 21, "cow"]
+        #missao = ["blue", 12, "dog"]
+        #missao = ["green", 21, "horse"]
         #missao = ["Teste", 0, 0]
         acha_creeper(missao, temp_image.copy())
         media, centro, maior_area =  cormodule.identifica_cor(mask)
@@ -236,6 +236,7 @@ def scaneou(dado):
     distancia_e = range[359]
     distancia_d = range[1]
     distancia = (distancia + distancia_d + distancia_e)/3
+    print("Distancia:",distancia)
     #distancia_esq = (range[270]+range[269]+range[271])/3
     #print(range)
     #print("Intensities")
@@ -346,7 +347,8 @@ if __name__=="__main__":
     rospy.init_node("cor")
 
     topico_imagem = "/camera/image/compressed"
-
+    ombro = rospy.Publisher("/joint1_position_controller/command", Float64, queue_size=1)
+    garra = rospy.Publisher("/joint2_position_controller/command", Float64, queue_size=1)
     recebedor = rospy.Subscriber(topico_imagem, CompressedImage, roda_todo_frame, queue_size=4, buff_size = 2**24)
     recebe_odom = rospy.Subscriber("/odom", Odometry , recebe_odometria)
     recebe_scan = rospy.Subscriber("/scan", LaserScan, scaneou)
@@ -378,7 +380,7 @@ if __name__=="__main__":
         vel = Twist(Vector3(0,0,0), Vector3(0,0,math.pi/10.0))
         
         while not rospy.is_shutdown():
-
+            
             if angulo_robo is not None:
                 if angulo_robo < 0:
                     angulo_robo = angulo_robo + 2 * math.pi
@@ -478,6 +480,7 @@ if __name__=="__main__":
                             print("AREA CREEPER:",maior_area2)
             if RODANDO:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
+                ombro.publish(1.5)
                 #ang_roda = angulo_q_roda(x,y,angulo_atual)
                 print("ANG_ROBO:",angulo_robo,"ANG_DESEJADO:",angulo_desejado)
                 if angulo_robo-5 < angulo_desejado < angulo_robo+5:
@@ -487,15 +490,20 @@ if __name__=="__main__":
                     OK200 = False                
 
             if CREEPER:
+                print("Distancia:",distancia)
                 print("ENTROU CREEPER")
+                ombro.publish(-0.35)
                 if  distancia >= 0.2:
+                    garra.publish(-1.0)
                     print("ENTROU CREEPER IF")
                     vel = Twist(Vector3(0.1,0,0), Vector3(0,0,0))
                     if (centro_creeper[0] > centro_img[0]):
                         vel = Twist(Vector3(0.1,0,0), Vector3(0,0,-0.1))
                     else:
                         vel = Twist(Vector3(0.1,0,0), Vector3(0,0,0.1))
-                elif distancia <= 0.2:
+                elif distancia < 0.2:
+                    garra.publish(0.0)
+                    print("Distancia:",distancia)
                     print("ENTROU CREEPER ELSE")
                     vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0))
                     CREEPER = False
