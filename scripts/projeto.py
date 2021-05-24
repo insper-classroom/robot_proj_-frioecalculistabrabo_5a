@@ -104,18 +104,10 @@ def roda_todo_frame(imagem):
         temp_image = bridge.compressed_imgmsg_to_cv2(imagem, "bgr8")
         mask = segmenta_linha_amarela(temp_image)
         img = ajuste_linear_grafico_x_fy(mask)
-        '''
-        contornos = encontrar_contornos(mask)
-        cv2.drawContours(temp_image, contornos, -1, [0, 0, 255], 2)
-        img, X, Y = encontrar_centro_dos_contornos(temp_image, contornos)
-        img = desenhar_linha_entre_pontos(img, X,Y, (255,0,0))
-        img, lm = regressao_por_centro(img, X,Y)
-        angulo = calcular_angulo_com_vertical(img, lm)
-        '''
         #missao = ["orange", 11, "cow"]
-        #missao = ["blue", 12, "dog"]
+        missao = ["blue", 22, "dog"]
         #missao = ["green", 23, "horse"]
-        missao = ["Teste", 0, 0]
+        #missao = ["Teste", 0, 0]
         acha_creeper(missao, temp_image.copy())
         media, centro, maior_area =  cormodule.identifica_cor(mask)
         cv2.imshow("Camera", img) 
@@ -160,83 +152,7 @@ def morpho_limpa(mask):
 
     return mask
 
-def encontrar_contornos(mask):
-    """Não mude ou renomeie esta função
-        deve receber uma imagem preta e branca os contornos encontrados
-    """
-    contornos, _ = cv2.findContours(mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
-   
-    return contornos
 
-def crosshair(img, point, size, color):
-    """ Desenha um crosshair centrado no point.
-        point deve ser uma tupla (x,y)
-        color é uma tupla R,G,B uint8
-    """
-    x,y = point
-    cv2.line(img,(x - size,y),(x + size,y),color,2)
-    cv2.line(img,(x,y - size),(x, y + size),color,2)
-
-def encontrar_centro_dos_contornos(img, contornos):
-    """Não mude ou renomeie esta função
-        deve receber um contorno e retornar, respectivamente, a imagem com uma cruz no centro de cada segmento e o centro dele. formato: img, x, y
-    """
-    X=[]
-    Y=[]
-    for contorno in contornos:
-        M = cv2.moments(contorno)
-        if M["m00"]:
-            cX = int(M["m10"] / M["m00"])
-            cY = int(M["m01"] / M["m00"])
-            crosshair(img,(cX,cY),10,(0,0,255))    
-            X.append(cX)
-            Y.append(cY)
-
-    return img, X, Y
-
-def calcular_angulo_com_vertical(img, lm):
-    """Não mude ou renomeie esta função
-        deve receber uma lista de coordenadas XY, e estimar a melhor reta, utilizando o metodo preferir, que passa pelos centros. Retorne a imagem com a reta.
-        
-        Dica: cv2.line(img,ponto1,ponto2,color,2) desenha uma linha que passe entre os pontos, mesmo que ponto1 e ponto2 não pertençam a imagem.
-    """
-    m, h = lm.coef_, lm.intercept_
-    angulo=90+math.degrees(math.atan(m))
-
-    return angulo
-
-def desenhar_linha_entre_pontos(img, X, Y, color):
-    """Não mude ou renomeie esta função
-        deve receber uma lista de coordenadas XY, e retornar uma imagem com uma linha entre os centros EM SEQUENCIA do mais proximo.
-    """
-    for i in range(0,len(X)-1):
-        cv2.line(img,(X[i],Y[i]),(X[i+1],Y[i+1]),color,5)
-  
-    return img    
-
-def regressao_por_centro(img, x,y):
-    """Não mude ou renomeie esta função
-        deve receber uma lista de coordenadas XY, e estimar a melhor reta, utilizando o metodo preferir, que passa pelos centros. Retorne a imagem com a reta e os parametros da reta
-        
-        Dica: cv2.line(img,ponto1,ponto2,color,2) desenha uma linha que passe entre os pontos, mesmo que ponto1 e ponto2 não pertençam a imagem.
-    """
-
-    x=np.array(x).reshape(-1,1)
-    y=np.array(y).reshape(-1,1)
-    lr_model=LinearRegression()
-    lr_model.fit(x,y)
-
-    m, h = lr_model.coef_, lr_model.intercept_
-
-    x_min = int(min(x)) 
-    x_max = int(max(x)) 
-
-    y_min = int(m*x_min + h)
-    y_max = int(m*x_max + h)    
-    
-    cv2.line(img, (x_min, y_min), (x_max, y_max), (255,255,0), thickness=3); 
-
-    return img, lr_model
 
 def checa_creeper():
     if not centro2 is None:
@@ -266,16 +182,7 @@ def multiplot_gray(imgs, legenda):
     for i in range(len(imgs)):
         axes[i].imshow(imgs[i], vmin=0, vmax=255, cmap="Greys_r")
 
-def center_of_mass(mask):
-    """ Retorna uma tupla (cx, cy) que desenha o centro do contorno"""
-    M = cv2.moments(mask)
-    # Usando a expressão do centróide definida em: https://en.wikipedia.org/wiki/Image_moment
-    if M["m00"] != 0:
-        cX = int(M["m10"] / M["m00"])
-        cY = int(M["m01"] / M["m00"])
-        return [int(cX), int(cY)]
-    else: 
-        return [0,0]
+
 
 def ajuste_linear_x_fy(mask):
     global coef_angular
@@ -415,13 +322,13 @@ def acha_creeper(missao, frame):
     global maior_area2
     img_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     ####Escolhe cor
-    if missao[0] == "blue":  
+    if (missao[0] == "blue" and ids==missao[1]):  
         centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor_azul(frame)
         
-    elif missao[0] == "green":
+    elif missao[0] == "green" and ids==missao[1]:
         centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor_verde(frame)
 
-    elif missao[0] == "orange":
+    elif missao[0] == "orange" and ids==missao[1]:
         centro_creeper, centro_img, maior_area2 =  cormodule.identifica_cor_laranja(frame)
     else:
         centro_creeper, centro_img, maior_area2 =  [0,0],[0,0],0
@@ -432,7 +339,6 @@ def acha_creeper(missao, frame):
     #centro_img = (frame.shape[1]//2, frame.shape[0]//2)
     cv2.imshow("creeper", frame)
     cv2.waitKey(1)
-
 
 
 
@@ -584,11 +490,11 @@ if __name__=="__main__":
                 print("ENTROU CREEPER")
                 if  distancia >= 0.2:
                     print("ENTROU CREEPER IF")
-                    vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0))
+                    vel = Twist(Vector3(0.1,0,0), Vector3(0,0,0))
                     if (centro_creeper[0] > centro_img[0]):
-                        vel = Twist(Vector3(0.3,0,0), Vector3(0,0,-0.2))
+                        vel = Twist(Vector3(0.1,0,0), Vector3(0,0,-0.1))
                     else:
-                        vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0.2))
+                        vel = Twist(Vector3(0.1,0,0), Vector3(0,0,0.1))
                 elif distancia <= 0.2:
                     print("ENTROU CREEPER ELSE")
                     vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0))
