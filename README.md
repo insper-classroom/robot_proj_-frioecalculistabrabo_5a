@@ -11,6 +11,7 @@ Nome dos integrantes:
 * Keiya Nishio
 
 Links dos vídeos:
+**Conceito C
 * Percorrendo a pista: https://www.youtube.com/watch?v=KlYdUrmGaGI
 * Percorrendo a pista (20 minutos): https://www.youtube.com/watch?v=7AtwakXDK3g&ab_channel=BrunoRodriguesBrunoRodrigues
 
@@ -18,6 +19,10 @@ Links dos vídeos:
 * Creeper Verde: https://www.youtube.com/watch?v=2ZjgkT2vwTI
 * Creeper Laranja: https://www.youtube.com/watch?v=nKh9kAYvDx4
 
+**Conceito B
+* Creeper Azul (garra): https://web.microsoftstream.com/video/d09befb7-88b1-4ab6-a521-5ca2d6936c65
+* Creeper Verde (garra): https://web.microsoftstream.com/video/a9c2200a-0d3c-4610-aba2-adea4bb80b8c
+* Creeper Laranja (garra): https://web.microsoftstream.com/video/b427cc86-245c-4439-a4b4-6c5bc6482300
 
 Visite sempre o enunciado abaixo para atualizacões: 
 
