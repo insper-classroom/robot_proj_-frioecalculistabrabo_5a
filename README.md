@@ -10,7 +10,7 @@ Nome dos integrantes:
 * João Victor Pazotti Silva
 * Keiya Nishio
 
-Links dos vídeos:
+Links dos vídeos:<br>
 **CONCEITO C**
 * Percorrendo a pista: https://www.youtube.com/watch?v=KlYdUrmGaGI
 * Percorrendo a pista (20 minutos): https://www.youtube.com/watch?v=7AtwakXDK3g&ab_channel=BrunoRodriguesBrunoRodrigues
