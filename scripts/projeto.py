@@ -104,9 +104,9 @@ def roda_todo_frame(imagem):
         temp_image = bridge.compressed_imgmsg_to_cv2(imagem, "bgr8")
         mask = segmenta_linha_amarela(temp_image)
         img = ajuste_linear_grafico_x_fy(mask)
-        missao = ["orange", 21, "cow"]
-        #missao = ["blue", 12, "dog"]
-        #missao = ["green", 21, "horse"]
+        #missao = ["orange", 11, "cow"]
+        missao = ["blue", 22, "dog"]
+        #missao = ["green", 23, "horse"]
         #missao = ["Teste", 0, 0]
         acha_creeper(missao, temp_image.copy())
         media, centro, maior_area =  cormodule.identifica_cor(mask)
@@ -371,6 +371,7 @@ if __name__=="__main__":
     OK150 = False
     OK200 = False
     volta = False
+    RODANDO_CREEPER=False
     recomeco = 1
     velocidade = 0.2
     
@@ -480,7 +481,6 @@ if __name__=="__main__":
                             print("AREA CREEPER:",maior_area2)
             if RODANDO:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
-                ombro.publish(1.5)
                 #ang_roda = angulo_q_roda(x,y,angulo_atual)
                 print("ANG_ROBO:",angulo_robo,"ANG_DESEJADO:",angulo_desejado)
                 if angulo_robo-5 < angulo_desejado < angulo_robo+5:
@@ -492,7 +492,7 @@ if __name__=="__main__":
             if CREEPER:
                 print("Distancia:",distancia)
                 print("ENTROU CREEPER")
-                ombro.publish(-0.35)
+                ombro.publish(-0.4)
                 if  distancia >= 0.2:
                     garra.publish(-1.0)
                     print("ENTROU CREEPER IF")
@@ -501,18 +501,28 @@ if __name__=="__main__":
                         vel = Twist(Vector3(0.1,0,0), Vector3(0,0,-0.1))
                     else:
                         vel = Twist(Vector3(0.1,0,0), Vector3(0,0,0.1))
-                elif distancia < 0.2:
+                elif distancia < 0.19:
+                    vel = Twist(Vector3(0.0,0,0), Vector3(0,0,0))
                     garra.publish(0.0)
                     print("Distancia:",distancia)
                     print("ENTROU CREEPER ELSE")
-                    vel = Twist(Vector3(0.3,0,0), Vector3(0,0,0))
                     CREEPER = False
                     viu_creeper = True
-                    RODANDO = True
+                    RODANDO_CREEPER = True
                     angulo_desejado = (angulo_robo - 180 + 360) % 360
 
+            if RODANDO_CREEPER:
+                vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
+                ombro.publish(1.5)
+                #ang_roda = angulo_q_roda(x,y,angulo_atual)
+                print("ANG_ROBO:",angulo_robo,"ANG_DESEJADO:",angulo_desejado)
+                if angulo_robo-5 < angulo_desejado < angulo_robo+5:
+                    AVANCAR=True
+                    RODANDO_CREEPER = False
+                    OK50 = False
+                    OK200 = False 
 
-
+    
             for r in resultados:
                 print(r)
 
