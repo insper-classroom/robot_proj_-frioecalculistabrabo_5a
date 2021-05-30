@@ -104,8 +104,9 @@ def roda_todo_frame(imagem):
         temp_image = bridge.compressed_imgmsg_to_cv2(imagem, "bgr8")
         mask = segmenta_linha_amarela(temp_image)
         img = ajuste_linear_grafico_x_fy(mask)
+        """Aqui é onde definimos nossas missões, sendo estas a cor e o id"""
         #missao = ["orange", 11, "cow"]
-        missao = ["blue", 22, "dog"]
+        missao = ["blue", 12, "dog"]
         #missao = ["green", 23, "horse"]
         #missao = ["Teste", 0, 0]
         acha_creeper(missao, temp_image.copy())
@@ -153,37 +154,6 @@ def morpho_limpa(mask):
     return mask
 
 
-
-def checa_creeper():
-    if not centro2 is None:
-        return True
-    else:
-        False
-
-def multiplot(imgs, legenda="No sub"):
-    """ Função """
-    fig, axes = plt.subplots(1,len(imgs), figsize=(24,8))    
-    fig.suptitle(legenda)
-    if len(imgs)==1: # Peculiaridade do subplot. Não é relevante para a questão
-        ax = axes
-        ax.imshow(cv2.cvtColor(imgs[0], cv2.COLOR_BGR2RGB))
-        return
-    for i in range(len(imgs)):
-        axes[i].imshow(cv2.cvtColor(imgs[i], cv2.COLOR_BGR2RGB))
-
-def multiplot_gray(imgs, legenda):
-    """ Função que plota n imagens grayscale em linha"""
-    fig, axes = plt.subplots(1,len(imgs), figsize=(26,8))    
-    fig.suptitle(legenda)
-    if len(imgs)==1: # Peculiaridade do subplot. Não é relevante para a questão
-        ax = axes
-        ax.imshow(imgs[0],  vmin=0, vmax=255, cmap="Greys_r")
-        return
-    for i in range(len(imgs)):
-        axes[i].imshow(imgs[i], vmin=0, vmax=255, cmap="Greys_r")
-
-
-
 def ajuste_linear_x_fy(mask):
     global coef_angular
     """Recebe uma imagem já limiarizada e faz um ajuste linear
@@ -226,9 +196,10 @@ def ajuste_linear_grafico_x_fy(mask):
         return None
 
 def scaneou(dado):
-    global distancia
-    #global distancia_esq
 
+    #Função que analisa e detecta a distancia dos objetos na frente do robo pelo laser
+
+    global distancia
     print("Faixa valida: ", dado.range_min , " - ", dado.range_max )
     print("Leituras:")
     range = np.array(dado.ranges).round(decimals=2)
@@ -237,12 +208,11 @@ def scaneou(dado):
     distancia_d = range[1]
     distancia = (distancia + distancia_d + distancia_e)/3
     print("Distancia:",distancia)
-    #distancia_esq = (range[270]+range[269]+range[271])/3
-    #print(range)
-    #print("Intensities")
-    #print(np.array(dado.intensities).round(decimals=2))
 
 def acha_aruco(gray):
+
+    #Função cujo objetivo é identificar os ids dos arucos da pista
+
     gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
     print(ids)
@@ -285,18 +255,10 @@ def valida_aruco(target):
     else:
         return False
 
-
-
-
-def angulo_q_roda(x,y, ang):
-    angulo_trig = math.atan2(y,x)
-
-    roda = (math.pi - ang) + angulo_trig
-
-    return roda
-
-
 def recebe_odometria(data):
+
+    #função cujo objetivo que fornece os angulos do robo frontal"
+
     global x
     global y
     global contador
@@ -374,6 +336,8 @@ if __name__=="__main__":
     RODANDO_CREEPER=False
     recomeco = 1
     velocidade = 0.2
+
+    velocidade_zero=Twist(Vector3(0,0,0), Vector3(0,0,0))
     
     
     try:
@@ -432,7 +396,7 @@ if __name__=="__main__":
                         OK50 = False
                             
                     if (distancia<=1) and OK50:
-                        vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                        vel = velocidade_zero
                         angulo_desejado = (angulo_robo - 180 + 360) % 360
                         print("GIRAR 50!")
                         AVANCAR = False 
@@ -440,7 +404,7 @@ if __name__=="__main__":
 
                     if (distancia<=1.5) and OK200:
                         if not volta:
-                            vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                            vel = velocidade_zero
                             angulo_desejado = (angulo_robo - 180 + 360) % 360
                             print("GIRAR 200!")
                             AVANCAR = False
@@ -448,7 +412,7 @@ if __name__=="__main__":
                             RODANDO = True
 
                     if (distancia<=1) and OK200 and volta:
-                        vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                        vel = velocidade_zero
                         angulo_desejado = (angulo_robo - 315 + 360) % 360
                         print("GIRAR 200! VOLTA")
                         AVANCAR = False 
@@ -458,7 +422,7 @@ if __name__=="__main__":
                         if volta:
                             if not POSICIONAR:
                                 agora = rospy.Time.now()
-                                vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                                vel = velocidade_zero
                                 POSICIONAR = True
                             if POSICIONAR:
                                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
@@ -467,7 +431,7 @@ if __name__=="__main__":
 
 
                     if (distancia<=1) and OK150:
-                        vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+                        vel = velocidade_zero
                         angulo_desejado = (angulo_robo - 180 + 360) % 360
                         print("GIRAR 150!")
                         AVANCAR = False 
@@ -481,7 +445,6 @@ if __name__=="__main__":
                             print("AREA CREEPER:",maior_area2)
             if RODANDO:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
-                #ang_roda = angulo_q_roda(x,y,angulo_atual)
                 print("ANG_ROBO:",angulo_robo,"ANG_DESEJADO:",angulo_desejado)
                 if angulo_robo-5 < angulo_desejado < angulo_robo+5:
                     AVANCAR=True
@@ -514,7 +477,6 @@ if __name__=="__main__":
             if RODANDO_CREEPER:
                 vel = Twist(Vector3(0,0,0), Vector3(0,0,0.2))
                 ombro.publish(1.5)
-                #ang_roda = angulo_q_roda(x,y,angulo_atual)
                 print("ANG_ROBO:",angulo_robo,"ANG_DESEJADO:",angulo_desejado)
                 if angulo_robo-5 < angulo_desejado < angulo_robo+5:
                     AVANCAR=True
